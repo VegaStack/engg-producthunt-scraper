@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Product Hunt Scraper</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      width: 220px;
+      padding: 15px;
+      text-align: center;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+      display: none; /* Hidden by default */
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h3>Product Hunt Scraper</h3>
+  <div id="status">Click the button to start scraping.</div>
+  <button id="scrapeButton">Scrape Products</button>
+  <div id="loader"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
