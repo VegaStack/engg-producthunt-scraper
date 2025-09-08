@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ProductHunt Scrapper",
+  "name": "ProductHunt Scraper - Free, No API key required",
   "version": "1.0",
-  "description": "Scrapes Product Hunt monthly leaderboards.",
+  "description": "Scrapes ProductHunt monthly leaderboards.",
   "permissions": [
     "activeTab",
     "scripting",

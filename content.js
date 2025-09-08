@@ -2,7 +2,7 @@
 // It scrolls to the bottom of the page to load all products and then scrapes the data.
 async function scrollToBottomAndScrape() {
   try {
-    console.log('🚀 Starting Product Hunt scraping process...');
+    console.log('🚀 Starting ProductHunt scraping process...');
     
     let initialProductCount = document.querySelectorAll('section[data-test^="post-item-"]').length;
     
@@ -120,7 +120,7 @@ async function scrollToBottomAndScrape() {
   }
 }
 
-// Analyze Product Hunt URLs to get final destinations and social media data
+// Analyze ProductHunt URLs to get final destinations and social media data
 async function analyzeProductUrls(products) {
   try {
     chrome.runtime.sendMessage({ 
@@ -213,7 +213,7 @@ async function analyzeProductUrls(products) {
         
         // Combine product data with analysis result - simplified
         return {
-          // Product Hunt data
+          // ProductHunt data
           productName: product['Product Name'] || 'N/A',
           description: product['Description'] || 'N/A',
           categories: product['Categories'] || 'N/A',
@@ -236,7 +236,7 @@ async function analyzeProductUrls(products) {
         
         // Return error result - simplified
         return {
-          // Product Hunt data
+          // ProductHunt data
           productName: product['Product Name'] || 'N/A',
           description: product['Description'] || 'N/A',
           categories: product['Categories'] || 'N/A',
@@ -267,7 +267,7 @@ async function analyzeProductUrls(products) {
       } else {
         // Handle rejected promises
         analysisResults.push({
-          // Product Hunt data
+          // ProductHunt data
           productName: 'Unknown',
           description: 'N/A',
           categories: 'N/A',
@@ -292,7 +292,7 @@ async function analyzeProductUrls(products) {
       const productIdUrl = product['Product Id Url'];
       if (!productIdUrl || productIdUrl === 'N/A') {
         analysisResults.push({
-          // Product Hunt data
+          // ProductHunt data
           productName: product['Product Name'] || 'N/A',
           description: product['Description'] || 'N/A',
           categories: product['Categories'] || 'N/A',
@@ -363,7 +363,7 @@ function scrapeProducts() {
     const categoryElements = card.querySelectorAll('a[href*="/topics/"]');
     const categories = Array.from(categoryElements).map(el => el.innerText.trim()).join(', ');
 
-    // Scrape the Product Hunt URL
+    // Scrape the ProductHunt URL
     const linkElement = card.querySelector('a[data-test^="post-name-"]');
     const productHuntUrl = linkElement ? `https://www.producthunt.com${linkElement.getAttribute('href')}` : 'N/A';
 

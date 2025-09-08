@@ -1,11 +1,11 @@
-# ProductHunt Scrapper - Chrome Extension
+# ProductHunt Scraper - Chrome Extension
 
 <div align="center">
-  <img src="icons/icon128.png" alt="ProductHunt Scrapper Logo" width="128" height="128">
+  <img src="icons/icon128.png" alt="ProductHunt Scraper Logo" width="128" height="128">
   
-  <h3>🚀 Extract Product Hunt Leaderboard Data Effortlessly</h3>
+  <h3>🚀 Extract ProductHunt Leaderboard Data Effortlessly</h3>
   
-  <p>A powerful Chrome extension that automatically scrapes product information from Product Hunt leaderboard pages and exports it to CSV format.</p>
+  <p>A powerful Chrome extension that automatically scrapes product information from ProductHunt leaderboard pages and exports it to CSV format.</p>
   
   [![Chrome Web Store](https://img.shields.io/badge/Chrome-Extension-blue?logo=google-chrome&logoColor=white)](https://chrome.google.com/webstore)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -31,9 +31,9 @@ The extension extracts the following information for each product:
 | Field | Description |
 |-------|-------------|
 | **Product Name** | The name of the product |
-| **Description** | Product description from Product Hunt |
+| **Description** | Product description from ProductHunt |
 | **Categories** | Product categories/tags |
-| **ProductHunt URL** | Direct link to the product on Product Hunt |
+| **ProductHunt URL** | Direct link to the product on ProductHunt |
 | **Comments** | Number of comments |
 | **Upvotes** | Number of upvotes (pods) |
 | **Website URL** | Final resolved website URL |
@@ -62,12 +62,12 @@ The extension extracts the following information for each product:
 
 4. **Pin the Extension**
    - Click the puzzle piece icon in Chrome toolbar
-   - Pin the "ProductHunt Scrapper" extension for easy access
+   - Pin the "ProductHunt Scraper" extension for easy access
 
 ## 📖 Usage
 
-### Step 1: Navigate to Product Hunt
-Go to any Product Hunt leaderboard page:
+### Step 1: Navigate to ProductHunt
+Go to any ProductHunt leaderboard page:
 - All-time leaderboards: `https://www.producthunt.com/leaderboard`
 - Daily leaderboards:    `https://www.producthunt.com/leaderboard/daily/2025/2/13`
 - Monthly leaderboards:  `https://www.producthunt.com/leaderboard/`
@@ -75,7 +75,7 @@ Go to any Product Hunt leaderboard page:
 
 
 ### Step 2: Start Scraping
-1. Click the ProductHunt Scrapper icon in your Chrome toolbar
+1. Click the ProductHunt Scraper icon in your Chrome toolbar
 2. Click **"Start Extracting Products"** button
 3. The extension will automatically:
    - Scroll down to load all products
@@ -113,7 +113,7 @@ Go to any Product Hunt leaderboard page:
 
 ### Permissions
 
-- `activeTab`: Access to the current Product Hunt tab
+- `activeTab`: Access to the current ProductHunt tab
 - `scripting`: Inject content scripts
 - `tabs`: Query tab information
 - `*://*/*`: Host permissions for URL resolution
@@ -199,8 +199,8 @@ We welcome contributions! Here's how you can help:
 
 ### Common Issues
 
-**Extension not working on Product Hunt pages**
-- Ensure you're on a valid Product Hunt leaderboard page
+**Extension not working on ProductHunt pages**
+- Ensure you're on a valid ProductHunt leaderboard page
 - Check that the extension is enabled in `chrome://extensions/`
 - Try refreshing the page and clicking the extension again
 
@@ -210,7 +210,7 @@ We welcome contributions! Here's how you can help:
 - Ensure you have sufficient permissions
 
 **CSV file is empty or incomplete**
-- Verify you're on a Product Hunt leaderboard page
+- Verify you're on a ProductHunt leaderboard page
 - Check your internet connection
 - Try scrolling down manually before starting the extension
 
@@ -231,7 +231,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Product Hunt** for providing the platform and data
+- **ProductHunt** for providing the platform and data
 - **Chrome Extension API** for the powerful extension framework
 - **Open Source Community** for inspiration and contributions
 - **VegaStack** for development and maintenance

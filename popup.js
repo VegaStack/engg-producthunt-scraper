@@ -72,6 +72,7 @@ function showErrorState() {
   
   // Update button
   scrapeButton.disabled = false;
+  scrapeButton.className = 'primary-button'; // Apply standard primary button style
   const btnText = scrapeButton.querySelector('.btn-text');
   const btnIcon = scrapeButton.querySelector('.btn-icon');
   
@@ -80,7 +81,7 @@ function showErrorState() {
   
   // Add click handler for opening leaderboard
   scrapeButton.onclick = () => {
-    window.open('https://www.producthunt.com/leaderboard/monthly/2025/1', '_blank');
+    window.open(getCurrentLeaderboardUrl(), '_blank');
   };
 }
 
@@ -99,6 +100,7 @@ function showMainLeaderboardState() {
   
   // Update button
   scrapeButton.disabled = false;
+  scrapeButton.className = 'primary-button'; // Apply standard primary button style
   const btnText = scrapeButton.querySelector('.btn-text');
   const btnIcon = scrapeButton.querySelector('.btn-icon');
   
@@ -107,8 +109,16 @@ function showMainLeaderboardState() {
   
   // Add click handler for opening leaderboard
   scrapeButton.onclick = () => {
-    window.open('https://www.producthunt.com/leaderboard/monthly/2025/1', '_blank');
+    window.open(getCurrentLeaderboardUrl(), '_blank');
   };
+}
+
+// Helper function to generate dynamic leaderboard URL
+function getCurrentLeaderboardUrl() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // getMonth() returns 0-11, so add 1
+  return `https://www.producthunt.com/leaderboard/monthly/${year}/${month}/all`;
 }
 
 // State management
@@ -138,6 +148,7 @@ scrapeButton.addEventListener('click', () => {
   
   // Update UI for starting state
   scrapeButton.disabled = true;
+  scrapeButton.className = 'primary-button'; // Reset to normal style for scraping
   const btnText = scrapeButton.querySelector('.btn-text');
   const btnIcon = scrapeButton.querySelector('.btn-icon');
   
@@ -187,10 +198,10 @@ scrapeButton.addEventListener('click', () => {
 // Update progress bar
 function updateProgress(current, total, message) {
   if (total > 0) {
-    const percentage = Math.round((current / total) * 100);
+    const percentage = Math.max(1, Math.round((current / total) * 100)); // Ensure minimum 1%
     
     // Only update if progress is moving forward
-    const currentWidth = parseInt(progressBar.style.width) || 0;
+    const currentWidth = parseInt(progressBar.style.width) || 1;
     if (percentage > currentWidth) {
       progressBar.style.width = `${percentage}%`;
       
@@ -199,12 +210,14 @@ function updateProgress(current, total, message) {
       }
     }
     
+    // Update progress text with the processing message (bottom)
     if (progressText) {
-      progressText.textContent = message;
+      progressText.textContent = `Processing ${current}/${total}`;
     }
     
+    // Keep status div with descriptive message only (top)
     if (!progressContainer.classList.contains('hidden')) {
-      statusDiv.textContent = message;
+      statusDiv.textContent = 'Fetching website links for the products...';
     }
   }
 }
@@ -220,10 +233,18 @@ function resetUI() {
   progressContainer.classList.add('hidden');
   statsContainer.classList.add('hidden');
   
-  progressBar.style.width = '0%';
+  progressBar.style.width = '1%';
+  if (progressText) {
+    progressText.textContent = 'Processing 0/0';
+  }
   currentStep = 'ready';
   totalProducts = 0;
   currentProduct = 0;
+  
+  // Check if we're on the main leaderboard page and apply outline orange style
+  if (isMainLeaderboardPage()) {
+    showMainLeaderboardState();
+  }
 }
 
 // Store data globally
@@ -300,9 +321,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Go directly to processing UI
     progressContainer.classList.remove('hidden');
     processMessage.classList.add('hidden'); // Hide the fetching message during processing
-    progressBar.style.width = '0%';
+    progressBar.style.width = '1%';
     if (progressPercentage) {
-      progressPercentage.textContent = '0%';
+      progressPercentage.textContent = '1%';
+    }
+    if (progressText) {
+      progressText.textContent = `Processing 1/${totalProducts}`; // Show correct count with total
     }
     statusDiv.textContent = 'Fetching website links for the products...';
     
@@ -331,7 +355,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     statusDiv.textContent = `Found ${request.count} products. Starting URL analysis...`;
     progressContainer.classList.remove('hidden');
     processMessage.classList.add('hidden'); // Hide the fetching message during processing
-    progressBar.style.width = '0%';
+    progressBar.style.width = '1%';
+    if (progressText) {
+      progressText.textContent = `Processing 1/${request.count}`; // Show initial count
+    }
     
     // Add warning message for URL collection phase
     addUrlCollectionWarning();
@@ -345,13 +372,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Keep the process message hidden during progress updates
     processMessage.classList.add('hidden');
     
+    // Show progress container
+    progressContainer.classList.remove('hidden');
+    
     // Check if we have direct progress percentage
     if (request.progress !== undefined) {
-      const percentage = Math.round(request.progress);
+      const percentage = Math.max(1, Math.round(request.progress)); // Ensure minimum 1%
       console.log(`Updating progress to ${percentage}%`);
       
       // Only update if progress is moving forward
-      const currentWidth = parseInt(progressBar.style.width) || 0;
+      const currentWidth = parseInt(progressBar.style.width) || 1;
       if (percentage > currentWidth) {
         progressBar.style.width = `${percentage}%`;
         
@@ -361,8 +391,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
       
       if (progressText) {
-        progressText.textContent = request.message || 'Fetching website links for the products...';
+        progressText.textContent = request.message || 'Processing...';
       }
+      
+      // Keep status div with descriptive message only (top)
+      statusDiv.textContent = 'Fetching website links for the products...';
       
     } else {
       // Fallback to parsing message for progress info
@@ -370,7 +403,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (match) {
         currentProduct = parseInt(match[1]);
         totalProducts = parseInt(match[2]);
-        updateProgress(currentProduct, totalProducts, 'Processing...');
+        
+        // Show progress container and update progress
+        progressContainer.classList.remove('hidden');
+        updateProgress(currentProduct, totalProducts, `Processing ${currentProduct}/${totalProducts}`);
       } else {
         statusDiv.textContent = 'Processing...';
       }
@@ -444,7 +480,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
     // Create download CSV button (positioned right after status card)
     const downloadButton = document.createElement('button');
-    downloadButton.textContent = `Download CSV ${analysisData.length} Products`;
+    downloadButton.textContent = `Download CSV (${analysisData.length} Products)`;
     downloadButton.className = 'primary-button';
     downloadButton.style.marginTop = '16px';
     
@@ -543,7 +579,7 @@ function convertAnalysisToCSV(data) {
   console.log("First row in CSV conversion:", data[0]);
   console.log("Final URL in first row:", data[0].finalUrl);
   
-  // Define headers including Product Hunt data, analysis results, and validation data
+  // Define headers including ProductHunt data, analysis results, and validation data
   const headers = [
     'Product Name',
     'Description',
@@ -551,7 +587,7 @@ function convertAnalysisToCSV(data) {
     'ProductHunt URL',
     'Comments',
     'Upvotes',
-    'ProductHunt URL',
+    'ProductHunt URLS',
     'Website URL'
   ];
   
@@ -584,8 +620,8 @@ function convertAnalysisToCSV(data) {
         case 'Upvotes':
           value = row.pods || 'N/A';
           break;
-        case 'ProductHunt URL':
-          value = row.originalUrl || '';
+        case 'ProductHunt URLS':
+          value = row.originalUrl || 'N/A';
           break;
         case 'Website URL':
           value = row.finalUrl || '';

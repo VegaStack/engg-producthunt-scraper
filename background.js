@@ -14,8 +14,8 @@ async function updateBadge(tabId) {
     if (isProductHuntLeaderboard(tab.url)) {
       // Set an orange round dot badge when on leaderboard page
       chrome.action.setBadgeText({ text: '●', tabId: tabId });
-      chrome.action.setBadgeBackgroundColor({ color: '#F97316', tabId: tabId });
-      chrome.action.setBadgeTextColor({ color: '#F97316', tabId: tabId });
+      chrome.action.setBadgeBackgroundColor({ color: '#FF5164', tabId: tabId });
+      chrome.action.setBadgeTextColor({ color: '#FF5164', tabId: tabId });
     } else {
       // Clear badge when not on leaderboard page
       chrome.action.setBadgeText({ text: '', tabId: tabId });
@@ -36,6 +36,114 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.tabs.onActivated.addListener((activeInfo) => {
   updateBadge(activeInfo.tabId);
 });
+
+// Handle URL analysis requests from content script
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'analyze_url') {
+    analyzeUrl(request.url)
+      .then(finalUrl => {
+        sendResponse({
+          success: true,
+          finalUrl: finalUrl
+        });
+      })
+      .catch(error => {
+        sendResponse({
+          success: false,
+          error: error.message
+        });
+      });
+    return true; // Keep message channel open for async response
+  }
+});
+
+// Clean URL by removing ProductHunt specific parameters
+function cleanUrl(url) {
+  if (!url) return 'N/A';
+  
+  // Remove ProductHunt specific parameters
+  let cleanedUrl = url;
+  
+  // Remove ?ref=producthunt parameter
+  cleanedUrl = cleanedUrl.replace(/\?ref=producthunt.*$/, '');
+  
+  // Remove other common tracking parameters
+  cleanedUrl = cleanedUrl.replace(/\?utm_source=producthunt.*$/, '');
+  cleanedUrl = cleanedUrl.replace(/\?source=producthunt.*$/, '');
+  
+  // Remove any remaining query parameters that might be tracking
+  cleanedUrl = cleanedUrl.replace(/\?ref=.*$/, '');
+  
+  return cleanedUrl;
+}
+
+// Analyze URL using background script (bypasses CORS)
+async function analyzeUrl(url) {
+  try {
+    console.log(`Background script analyzing URL: ${url}`);
+    
+    // Use fetch with no-cors mode to bypass CORS restrictions
+    const response = await fetch(url, {
+      method: 'GET',
+      redirect: 'follow',
+      mode: 'no-cors'
+    });
+    
+    // For no-cors mode, we can't access response.url directly
+    // So we'll try a different approach
+    const corsResponse = await fetch(url, {
+      method: 'HEAD',
+      redirect: 'follow',
+      mode: 'cors',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    }).catch(() => null);
+    
+    if (corsResponse && corsResponse.url && !corsResponse.url.includes('producthunt.com')) {
+      const cleanedUrl = cleanUrl(corsResponse.url);
+      console.log(`Background script resolved URL: ${cleanedUrl}`);
+      return cleanedUrl;
+    }
+    
+    // If CORS fails, try to extract from the original URL
+    const phMatch = url.match(/\/r\/p\/(\d+)/);
+    if (phMatch) {
+      const productId = phMatch[1];
+      const productPageUrl = `https://www.producthunt.com/posts/${productId}`;
+      
+      try {
+        const pageResponse = await fetch(productPageUrl, {
+          method: 'GET',
+          mode: 'cors',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
+        
+        if (pageResponse.ok) {
+          const html = await pageResponse.text();
+          
+          // Look for website URL in JSON data
+          const websiteMatch = html.match(/"website_url":"([^"]+)"/);
+          if (websiteMatch) {
+            const websiteUrl = cleanUrl(websiteMatch[1]);
+            console.log(`Background script found website URL: ${websiteUrl}`);
+            return websiteUrl;
+          }
+        }
+      } catch (error) {
+        console.log(`Background script page extraction failed: ${error.message}`);
+      }
+    }
+    
+    return url; // Return original URL if all methods fail
+    
+  } catch (error) {
+    console.error(`Background script URL analysis failed: ${error.message}`);
+    return url;
+  }
+}
 
 // Update badge when extension starts
 chrome.runtime.onStartup.addListener(() => {
