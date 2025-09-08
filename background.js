@@ -106,25 +106,4 @@ async function fetchContentForUrl(url) {
   }
 }
 
-async function fetchViaProxy(url) {
-  // Use a CORS proxy service as fallback
-  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-  
-  console.log(`Trying proxy fetch for: ${url}`);
-  
-  const response = await fetch(proxyUrl, {
-    method: 'GET',
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Proxy fetch failed: ${response.status}`);
-  }
-  
-  const content = await response.text();
-  console.log(`Proxy fetch successful: ${content.length} characters`);
-  
-  return content;
-}
+

@@ -408,9 +408,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Starting scraping process...');
     // Start the scraping process when popup requests it
     scrollToBottomAndScrape();
-  } else if (request.action === 'start_url_analysis' && collectedProducts.length > 0) {
-    console.log('Starting URL analysis...');
-    analyzeProductUrls(collectedProducts);
+  } else if (request.action === 'start_url_analysis') {
+    console.log('Received start_url_analysis message');
+    console.log('Collected products count:', collectedProducts.length);
+    if (collectedProducts.length > 0) {
+      console.log('Starting URL analysis...');
+      analyzeProductUrls(collectedProducts);
+    } else {
+      console.error('No products collected, cannot start URL analysis');
+      chrome.runtime.sendMessage({ 
+        action: 'analysis_error', 
+        message: 'No products collected for analysis' 
+      });
+    }
   }
   
   // Send response back to popup

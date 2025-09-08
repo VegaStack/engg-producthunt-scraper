@@ -289,6 +289,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   // Phase 1: URLs collected - automatically start analysis
   else if (request.action === 'urls_collected') {
+    console.log('URLs collected, starting analysis:', request);
     totalProducts = request.count;
     collectedUrls = request.data;
     currentStep = 'analyzing';
@@ -309,8 +310,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     addUrlCollectionWarning();
     
     // Send message to content script to start URL analysis
+    console.log('Sending start_url_analysis message to content script');
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: 'start_url_analysis' });
+      console.log('Sending message to tab:', tabs[0].id);
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'start_url_analysis' }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error sending start_url_analysis message:', chrome.runtime.lastError);
+        } else {
+          console.log('start_url_analysis message sent successfully:', response);
+        }
+      });
     });
   }
   
