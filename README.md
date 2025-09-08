@@ -68,9 +68,11 @@ The extension extracts the following information for each product:
 
 ### Step 1: Navigate to Product Hunt
 Go to any Product Hunt leaderboard page:
-- Monthly leaderboards: `https://www.producthunt.com/leaderboard/monthly/2025/1`
-- Weekly leaderboards: `https://www.producthunt.com/leaderboard/weekly/2025/1`
 - All-time leaderboards: `https://www.producthunt.com/leaderboard`
+- Daily leaderboards:    `https://www.producthunt.com/leaderboard/daily/2025/2/13`
+- Monthly leaderboards:  `https://www.producthunt.com/leaderboard/`
+- Weekly leaderboards:   `https://www.producthunt.com/leaderboard/monthly/2025/2`
+
 
 ### Step 2: Start Scraping
 1. Click the ProductHunt Scrapper icon in your Chrome toolbar

@@ -16,16 +16,75 @@ console.log('Scrape button found:', !!scrapeButton);
 console.log('Status card found:', !!statusCard);
 console.log('Features card found:', !!featuresCard);
 
-// Check if current page is a ProductHunt leaderboard
+// Check if current page is a ProductHunt leaderboard with products
 async function isProductHuntLeaderboard() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    return tab.url && 
-           tab.url.includes('www.producthunt.com') && 
-           tab.url.includes('/leaderboard');
+    if (!tab.url || !tab.url.includes('www.producthunt.com') || !tab.url.includes('/leaderboard')) {
+      return false;
+    }
+    
+    // Check if it's the main leaderboard page (no specific time period)
+    const isMainLeaderboard = tab.url === 'https://www.producthunt.com/leaderboard' || 
+                              tab.url === 'https://www.producthunt.com/leaderboard/';
+    
+    if (isMainLeaderboard) {
+      return 'main-leaderboard'; // Special case for main page
+    }
+    
+    // Check if it has specific time periods (daily, monthly, yearly)
+    const hasTimePeriod = tab.url.includes('/daily/') || 
+                         tab.url.includes('/monthly/') || 
+                         tab.url.includes('/yearly/') ||
+                         tab.url.includes('/weekly/');
+    
+    return hasTimePeriod;
   } catch (error) {
     console.error('Error checking current tab:', error);
     return false;
+  }
+}
+
+// Show message for main leaderboard page (no products visible)
+function showMainLeaderboardMessage() {
+  if (statusCard) {
+    statusCard.classList.remove('hidden');
+    statusDiv.innerHTML = `
+      <div class="main-leaderboard-message">
+        <div class="message-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="message-content">
+          <h3>Select a Time Period First</h3>
+          <p>To extract products, please click on a specific month, week, or year from the leaderboard above.</p>
+          <div class="time-periods">
+            <span class="period-tag">Daily</span>
+            <span class="period-tag">Weekly</span>
+            <span class="period-tag">Monthly</span>
+            <span class="period-tag">Yearly</span>
+          </div>
+          <p class="instruction-text">Once you select a time period, products will appear and the extraction button will be enabled.</p>
+        </div>
+      </div>
+    `;
+    statusDiv.className = 'status-text main-leaderboard-status';
+  }
+  
+  // Disable the scrape button
+  if (scrapeButton) {
+    scrapeButton.disabled = true;
+    scrapeButton.classList.add('disabled');
+    const btnText = scrapeButton.querySelector('.btn-text');
+    if (btnText) {
+      btnText.textContent = 'Select a Time Period First';
+    }
+  }
+  
+  // Hide features card
+  if (featuresCard) {
+    featuresCard.classList.add('hidden');
   }
 }
 
@@ -150,20 +209,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   const scrapeButtonAfterLoad = document.getElementById('scrapeButton');
   console.log('Scrape button after DOM load:', !!scrapeButtonAfterLoad);
   
-  const isOnLeaderboard = await isProductHuntLeaderboard();
-  if (!isOnLeaderboard) {
+  const leaderboardStatus = await isProductHuntLeaderboard();
+  
+  if (leaderboardStatus === false) {
+    // Not on Product Hunt leaderboard at all
     showErrorState();
+  } else if (leaderboardStatus === 'main-leaderboard') {
+    // On main leaderboard page - show message to select time period
+    showMainLeaderboardMessage();
+  } else if (leaderboardStatus === true) {
+    // On specific time period page - enable extraction
+    console.log('On valid leaderboard page with products');
+    // Button should be enabled by default
   }
   
   // Add fallback event listener if the initial one didn't work
   const fallbackButton = document.getElementById('scrapeButton');
   if (fallbackButton && !fallbackButton.onclick) {
     console.log('Adding fallback event listener');
-    fallbackButton.addEventListener('click', () => {
+    fallbackButton.addEventListener('click', async () => {
       console.log('Fallback button clicked!');
-      // Call the same function as the main button
-      if (typeof window.startScraping === 'function') {
-        window.startScraping();
+      // Only allow scraping if on valid leaderboard page
+      const currentStatus = await isProductHuntLeaderboard();
+      if (currentStatus === true) {
+        if (typeof window.startScraping === 'function') {
+          window.startScraping();
+        }
       }
     });
   }
@@ -171,8 +242,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Add a click event listener to the "Start Extracting Products" button
 if (scrapeButton) {
-  scrapeButton.addEventListener('click', () => {
+  scrapeButton.addEventListener('click', async () => {
     console.log('Scrape button clicked!');
+    
+    // Check if we're on a valid leaderboard page before allowing scraping
+    const leaderboardStatus = await isProductHuntLeaderboard();
+    if (leaderboardStatus !== true) {
+      console.log('Not on valid leaderboard page, ignoring click');
+      return;
+    }
+    
     startScraping();
   });
 } else {
