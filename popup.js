@@ -2,7 +2,6 @@
 const scrapeButton = document.getElementById('scrapeButton');
 const loader = document.getElementById('loader');
 const statusDiv = document.getElementById('status');
-<<<<<<< HEAD
 const statusCard = document.getElementById('statusCard');
 const processMessage = document.getElementById('processMessage');
 const progressContainer = document.getElementById('progressContainer');
@@ -11,6 +10,11 @@ const progressPercentage = document.querySelector('.progress-percentage');
 const progressText = document.querySelector('.progress-text');
 const statsContainer = document.getElementById('stats');
 const featuresCard = document.querySelector('.features-card');
+
+// Debug: Check if elements are found
+console.log('Scrape button found:', !!scrapeButton);
+console.log('Status card found:', !!statusCard);
+console.log('Features card found:', !!featuresCard);
 
 // Check if current page is a ProductHunt leaderboard
 async function isProductHuntLeaderboard() {
@@ -77,45 +81,51 @@ let currentStep = 'ready';
 let totalProducts = 0;
 let currentProduct = 0;
 
-// Initialize popup - check if on correct page
-document.addEventListener('DOMContentLoaded', async () => {
-  const isOnLeaderboard = await isProductHuntLeaderboard();
-  if (!isOnLeaderboard) {
-    showErrorState();
-  }
-});
-
-// Add a click event listener to the "Start Extracting Products" button
-scrapeButton.addEventListener('click', () => {
+// Function to start scraping (can be called from anywhere)
+function startScraping() {
+  console.log('Starting scraping process...');
+  
   // Hide the features card
-  featuresCard.classList.add('hidden');
+  if (featuresCard) {
+    featuresCard.classList.add('hidden');
+  }
   
   // Show the status card
-  statusCard.classList.remove('hidden');
+  if (statusCard) {
+    statusCard.classList.remove('hidden');
+  }
   
   // Update UI for starting state
-  scrapeButton.disabled = true;
-  const btnText = scrapeButton.querySelector('.btn-text');
-  const btnIcon = scrapeButton.querySelector('.btn-icon');
+  if (scrapeButton) {
+    scrapeButton.disabled = true;
+    const btnText = scrapeButton.querySelector('.btn-text');
+    const btnIcon = scrapeButton.querySelector('.btn-icon');
+    
+    if (btnText) {
+      btnText.textContent = 'Scraping and Extracting Products';
+    }
+    if (btnIcon) {
+      btnIcon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+  }
   
-  btnText.textContent = 'Scraping and Extracting Products';
-  btnIcon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  
-  statusDiv.innerHTML = `
-    <div class="initializing-container">
-      <div class="initializing-text">Fetching products from the leaderboard…</div>
-      <div class="initializing-spinner"></div>
-    </div>
-    <div class="process-warning">
-      <div class="warning-icon">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+  if (statusDiv) {
+    statusDiv.innerHTML = `
+      <div class="initializing-container">
+        <div class="initializing-text">Fetching products from the leaderboard…</div>
+        <div class="initializing-spinner"></div>
       </div>
-      <div class="warning-text">Do not close this page or the extension. This can take up to a few minutes.</div>
-    </div>
-  `;
-  statusDiv.className = 'status-text';
+      <div class="process-warning">
+        <div class="warning-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="warning-text">Do not close this page or the extension. This can take up to a few minutes.</div>
+      </div>
+    `;
+    statusDiv.className = 'status-text';
+  }
   
   currentStep = 'scraping';
 
@@ -125,26 +135,50 @@ scrapeButton.addEventListener('click', () => {
     chrome.scripting.executeScript({
       target: { tabId: tabs[0].id },
       files: ['url-analyzer.js', 'content.js'] // Load analyzer first, then content script
-=======
-
-// Add a click event listener to the "Scrape Products" button
-scrapeButton.addEventListener('click', () => {
-  // Hide the scrape button and show the loader to indicate work is in progress
-  scrapeButton.style.display = 'none';
-  loader.style.display = 'block';
-  statusDiv.textContent = 'Scrolling and scraping...';
-
-  // Find the active tab and inject the content script into it
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.scripting.executeScript({
-      target: { tabId: tabs[0].id },
-      files: ['content.js'] // The script that will perform the scraping
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
     });
   });
+}
+
+// Expose the function globally
+window.startScraping = startScraping;
+
+// Initialize popup - check if on correct page
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('DOM Content Loaded');
+  
+  // Re-check elements after DOM is loaded
+  const scrapeButtonAfterLoad = document.getElementById('scrapeButton');
+  console.log('Scrape button after DOM load:', !!scrapeButtonAfterLoad);
+  
+  const isOnLeaderboard = await isProductHuntLeaderboard();
+  if (!isOnLeaderboard) {
+    showErrorState();
+  }
+  
+  // Add fallback event listener if the initial one didn't work
+  const fallbackButton = document.getElementById('scrapeButton');
+  if (fallbackButton && !fallbackButton.onclick) {
+    console.log('Adding fallback event listener');
+    fallbackButton.addEventListener('click', () => {
+      console.log('Fallback button clicked!');
+      // Call the same function as the main button
+      if (typeof window.startScraping === 'function') {
+        window.startScraping();
+      }
+    });
+  }
 });
 
-<<<<<<< HEAD
+// Add a click event listener to the "Start Extracting Products" button
+if (scrapeButton) {
+  scrapeButton.addEventListener('click', () => {
+    console.log('Scrape button clicked!');
+    startScraping();
+  });
+} else {
+  console.error('Scrape button not found!');
+}
+
 // Update progress bar
 function updateProgress(current, total, message) {
   if (total > 0) {
@@ -351,29 +385,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       console.log(`First item finalUrl before CSV conversion:`, analysisData[0].finalUrl);
     }
     const csvData = convertAnalysisToCSV(analysisData);
-=======
-// Listen for messages from the content script
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  // If the scraping was successful
-  if (request.action === 'scraping_complete') {
-    // Hide the loader and update the status message with the number of products found
-    loader.style.display = 'none';
-    statusDiv.textContent = `Scraped ${request.count} products.`;
-    
-    // Create a "Download CSV" button
-    const downloadButton = document.createElement('button');
-    downloadButton.textContent = 'Download CSV';
-    
-    // Convert the scraped data into CSV format
-    const csvData = convertToCSV(request.data);
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
 
     // When the download button is clicked, trigger the download in the active tab
     downloadButton.addEventListener('click', () => {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
-<<<<<<< HEAD
           function: triggerDownload,
           args: [csvData, 'producthunt_scraper_list.csv']
         });
@@ -431,47 +448,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.action === 'analysis_error') {
     statusDiv.textContent = `Analysis failed: ${request.message}`;
     resetUI();
-=======
-          function: triggerDownload, // This function is defined below and will be injected
-          args: [csvData]
-        });
-      });
-    });
-    
-    // Add the download button to the popup's body
-    document.body.appendChild(downloadButton);
-  // If there was an error during scraping
-  } else if (request.action === 'scraping_error') {
-    // Hide the loader, display the error message, and show the scrape button again
-    loader.style.display = 'none';
-    statusDiv.textContent = request.message;
-    scrapeButton.style.display = 'block';
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
   }
 });
 
 // This function is injected into the active tab to trigger the file download.
 // It creates a temporary link with the CSV data and simulates a click.
-<<<<<<< HEAD
 function triggerDownload(csvContent, filename = 'producthunt_scraper_list.csv') {
-=======
-function triggerDownload(csvContent) {
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-<<<<<<< HEAD
   link.setAttribute('download', filename);
-=======
-  link.setAttribute('download', 'product_hunt_leaderboard.csv');
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link); // Clean up the temporary link
 }
 
-<<<<<<< HEAD
 // This function converts analysis data to CSV format matching the Python script output
 function convertAnalysisToCSV(data) {
   if (!data || data.length === 0) {
@@ -537,29 +529,11 @@ function convertAnalysisToCSV(data) {
       
       // Escape double quotes within the data to prevent breaking the CSV format
       const escaped = ('' + value).replace(/"/g, '\\"');
-=======
-// This function converts an array of objects into a CSV-formatted string.
-// It runs in the popup's context.
-function convertToCSV(data) {
-  if (!data || data.length === 0) {
-    return "";
-  }
-  // Use the keys from the first object as the CSV headers
-  const headers = Object.keys(data[0]);
-  const csvRows = [headers.join(',')]; // Start with the header row
-
-  // Iterate over each product object to create a CSV row
-  for (const row of data) {
-    const values = headers.map(header => {
-      // Escape double quotes within the data to prevent breaking the CSV format
-      const escaped = ('' + row[header]).replace(/"/g, '\\"');
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
       return `"${escaped}"`; // Wrap each value in double quotes
     });
     csvRows.push(values.join(','));
   }
 
-<<<<<<< HEAD
   const finalCsv = csvRows.join('\n');
   
   // Debug log to check CSV output
@@ -567,7 +541,4 @@ function convertToCSV(data) {
   console.log(`CSV contains Final URL column: ${finalCsv.includes('Final URL')}`);
   
   return finalCsv; // Join all rows with a newline character
-=======
-  return csvRows.join('\n'); // Join all rows with a newline character
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
 }
