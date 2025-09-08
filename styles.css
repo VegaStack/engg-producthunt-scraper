@@ -238,6 +238,37 @@ body {
   line-height: 1.4;
 }
 
+/* Info Indicator */
+.info-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.info-icon {
+  width: 24px;
+  height: 24px;
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.info-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  text-align: center;
+  line-height: 1.4;
+}
+
 /* Initializing Container */
 .initializing-container {
   display: flex;
@@ -747,81 +778,4 @@ body {
   .primary-button {
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
-}
-
-/* Main Leaderboard Message Styles */
-.main-leaderboard-message {
-  text-align: center;
-  padding: 24px 20px;
-}
-
-.message-icon {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 16px;
-  color: #F59E0B; /* amber-500 */
-}
-
-.message-icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-.message-content h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827; /* gray-900 */
-  margin: 0 0 12px 0;
-}
-
-.message-content p {
-  font-size: 14px;
-  color: #6B7280; /* gray-500 */
-  margin: 0 0 16px 0;
-  line-height: 1.5;
-}
-
-.time-periods {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 16px 0;
-  flex-wrap: wrap;
-}
-
-.period-tag {
-  background: #FEF3C7; /* amber-100 */
-  color: #92400E; /* amber-800 */
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid #FCD34D; /* amber-300 */
-}
-
-.instruction-text {
-  font-size: 13px;
-  color: #9CA3AF; /* gray-400 */
-  font-style: italic;
-  margin-top: 12px !important;
-}
-
-.main-leaderboard-status {
-  background: #FFFBEB; /* amber-50 */
-  border: 1px solid #FCD34D; /* amber-300 */
-  border-radius: 8px;
-}
-
-/* Disabled Button Styles */
-.primary-button.disabled {
-  background: #E5E7EB; /* gray-200 */
-  color: #9CA3AF; /* gray-400 */
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.primary-button.disabled:hover {
-  background: #E5E7EB; /* gray-200 */
-  transform: none;
-  box-shadow: none;
 }
