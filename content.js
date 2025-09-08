@@ -4,6 +4,7 @@ async function scrollToBottomAndScrape() {
   try {
     let previousHeight = 0;
     let currentHeight = document.body.scrollHeight;
+<<<<<<< HEAD
     let noNewContentCount = 0; // Count consecutive attempts with no new content
     const maxNoNewContent = 5; // Increased to 5 attempts before stopping
     let lastProductCount = 0; // Track product count to detect loading
@@ -188,6 +189,27 @@ async function scrollToBottomAndScrape() {
         count: products.length, 
         data: products,
         message: `Collected ${products.length} Product Hunt URLs` 
+=======
+    
+    // Keep scrolling until the page height stops increasing
+    while (previousHeight < currentHeight) {
+      previousHeight = currentHeight;
+      window.scrollTo(0, currentHeight);
+      // Wait for a couple of seconds to allow new products to be loaded dynamically
+      await new Promise(resolve => setTimeout(resolve, 2000)); 
+      currentHeight = document.body.scrollHeight;
+    }
+
+    // Once scrolling is complete, call the function to scrape the product data
+    const products = scrapeProducts();
+    
+    // Send the scraped data back to the popup script
+    if (products.length > 0) {
+      chrome.runtime.sendMessage({ 
+        action: 'scraping_complete', 
+        count: products.length, 
+        data: products 
+>>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
       });
     } else {
       // If no products were found, send an error message
@@ -205,6 +227,7 @@ async function scrollToBottomAndScrape() {
   }
 }
 
+<<<<<<< HEAD
 // Analyze Product Hunt URLs to get final destinations and social media data
 async function analyzeProductUrls(products) {
   try {
@@ -428,6 +451,8 @@ async function analyzeProductUrls(products) {
   }
 }
 
+=======
+>>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
 // This function scrapes the product data from the page's HTML.
 function scrapeProducts() {
   const products = [];
@@ -481,6 +506,7 @@ function scrapeProducts() {
   return products;
 }
 
+<<<<<<< HEAD
 
 // Global variables to store collected data
 let collectedProducts = [];
@@ -492,5 +518,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
+=======
+>>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
 // Start the scraping process as soon as the script is injected
 scrollToBottomAndScrape();
