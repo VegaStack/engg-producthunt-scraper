@@ -75,7 +75,7 @@ function showErrorState() {
   const btnText = scrapeButton.querySelector('.btn-text');
   const btnIcon = scrapeButton.querySelector('.btn-icon');
   
-  btnText.textContent = 'Open ProductHunt leaderboard page';
+  btnText.textContent = 'Open ProductHunt Leaderboard Page';
   btnIcon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   
   // Add click handler for opening leaderboard
@@ -164,10 +164,22 @@ scrapeButton.addEventListener('click', () => {
 
   // Find the active tab and inject the content script into it
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    console.log('Injecting scripts into tab:', tabs[0].id);
+    
     // First inject the URL analyzer and validator, then the content script
     chrome.scripting.executeScript({
       target: { tabId: tabs[0].id },
       files: ['url-analyzer.js', 'content.js'] // Load analyzer first, then content script
+    }, () => {
+      console.log('Scripts injected successfully, sending start_scraping message');
+      // Send message to start scraping after scripts are injected
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'start_scraping' }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error sending message:', chrome.runtime.lastError);
+        } else {
+          console.log('Message sent successfully');
+        }
+      });
     });
   });
 });
@@ -220,8 +232,63 @@ let analysisData = null;
 
 // Listen for messages from the content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // Scraping started
+  if (request.action === 'scraping_started') {
+    console.log('Scraping started:', request.message);
+    statusDiv.innerHTML = `
+      <div class="initializing-container">
+        <div class="initializing-text">${request.message}</div>
+        <div class="initializing-spinner"></div>
+      </div>
+      <div class="process-warning">
+        <div class="warning-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="warning-text">Do not close this page or extension. This can take up to a few minutes.</div>
+      </div>
+    `;
+  }
+  
+  // Scraping progress
+  else if (request.action === 'scraping_progress') {
+    console.log('Scraping progress:', request.message);
+    statusDiv.innerHTML = `
+      <div class="initializing-container">
+        <div class="initializing-text">${request.message}</div>
+        <div class="initializing-spinner"></div>
+      </div>
+      <div class="process-warning">
+        <div class="warning-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="warning-text">Do not close this page or extension. This can take up to a few minutes.</div>
+      </div>
+    `;
+  }
+  
+  // Scraping error
+  else if (request.action === 'scraping_error') {
+    console.error('Scraping error:', request.message);
+    statusDiv.innerHTML = `
+      <div class="error-indicator">
+        <div class="error-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="error-text">${request.message}</div>
+      </div>
+    `;
+    scrapeButton.disabled = false;
+    scrapeButton.style.display = 'block';
+  }
+  
   // Phase 1: URLs collected - automatically start analysis
-  if (request.action === 'urls_collected') {
+  else if (request.action === 'urls_collected') {
     totalProducts = request.count;
     collectedUrls = request.data;
     currentStep = 'analyzing';

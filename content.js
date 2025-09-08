@@ -2,232 +2,124 @@
 // It scrolls to the bottom of the page to load all products and then scrapes the data.
 async function scrollToBottomAndScrape() {
   try {
-    let previousHeight = 0;
-    let currentHeight = document.body.scrollHeight;
-<<<<<<< HEAD
-    let noNewContentCount = 0; // Count consecutive attempts with no new content
-    const maxNoNewContent = 5; // Increased to 5 attempts before stopping
-    let lastProductCount = 0; // Track product count to detect loading
+    console.log('🚀 Starting Product Hunt scraping process...');
     
-    console.log('Starting slow, patient scrolling to load all products...');
-    
-    // Continuous scrolling strategy: Scroll to 95% of page height (5% gap from bottom) continuously and slowly
     let initialProductCount = document.querySelectorAll('section[data-test^="post-item-"]').length;
+    
+    // Send initial message to popup
+    chrome.runtime.sendMessage({ 
+      action: 'scraping_started', 
+      message: `Fetching product links... Found ${initialProductCount} products so far` 
+    });
     let currentProductCount = initialProductCount;
     let scrollAttempts = 0;
-    const maxScrollAttempts = 200; // Increased for continuous scrolling
-    let noNewProductsCount = 0; // Count consecutive attempts with no new products
-    const maxNoNewProducts = 5; // Stop after 5 consecutive attempts with no new products
-    let lastKnownProductCount = initialProductCount;
+    const maxScrollAttempts = 50; // Reduced for faster processing
+    let noNewProductsCount = 0;
+    const maxNoNewProducts = 3; // Stop after 3 consecutive attempts with no new products
     
-    console.log(`Starting continuous slow scrolling to 95% of page height (5% gap from bottom). Initial products: ${initialProductCount}`);
+    console.log(`📊 Initial products found: ${initialProductCount}`);
     
+    // Simple scrolling strategy
     while (scrollAttempts < maxScrollAttempts && noNewProductsCount < maxNoNewProducts) {
       scrollAttempts++;
-      console.log(`\n=== Scroll Attempt ${scrollAttempts}/${maxScrollAttempts} ===`);
+      console.log(`\n🔄 Scroll attempt ${scrollAttempts}/${maxScrollAttempts}`);
       
-      // Count products before this scroll attempt
+      // Count products before scroll
       const productsBeforeScroll = document.querySelectorAll('section[data-test^="post-item-"]');
       const productCountBeforeScroll = productsBeforeScroll.length;
       
-      console.log(`Products before scroll ${scrollAttempts}: ${productCountBeforeScroll}`);
-      
-      // Scroll to 95% of page height (5% gap from bottom)
-      const pageHeight = document.body.scrollHeight;
-      const scrollTo95Percent = Math.floor(pageHeight * 0.95);
-      
-      console.log(`Scrolling to 95% of page height (${scrollTo95Percent}px) - 5% gap from bottom...`);
+      // Scroll to bottom
       window.scrollTo({
-        top: scrollTo95Percent,
+        top: document.body.scrollHeight,
         behavior: 'smooth'
       });
       
-      // Wait slowly for content to load
+      // Wait for content to load
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Check if new products loaded
+      // Count products after scroll
       const productsAfterScroll = document.querySelectorAll('section[data-test^="post-item-"]');
       const productCountAfterScroll = productsAfterScroll.length;
       
       if (productCountAfterScroll > productCountBeforeScroll) {
-        console.log(`✓ Found ${productCountAfterScroll - productCountBeforeScroll} new products! Total: ${productCountAfterScroll}`);
-        lastKnownProductCount = productCountAfterScroll;
-        noNewProductsCount = 0; // Reset counter since we found new products
+        console.log(`✅ Found ${productCountAfterScroll - productCountBeforeScroll} new products! Total: ${productCountAfterScroll}`);
         currentProductCount = productCountAfterScroll;
+        noNewProductsCount = 0; // Reset counter
         
-        // Continue scrolling since we found new products
-        console.log(`Continuing to scroll for more products...`);
+        // Send progress update
+        chrome.runtime.sendMessage({ 
+          action: 'scraping_progress', 
+          count: productCountAfterScroll,
+          message: `Fetching product links... Found ${productCountAfterScroll} products so far` 
+        });
       } else {
         noNewProductsCount++;
-        console.log(`⚠ No new products found. Total: ${productCountAfterScroll} (${noNewProductsCount}/${maxNoNewProducts})`);
+        console.log(`⚠️ No new products found. Total: ${productCountAfterScroll} (${noNewProductsCount}/${maxNoNewProducts})`);
+      }
+      
+      // Check for load more buttons
+      const loadMoreButtons = document.querySelectorAll('button');
+      const loadMoreButton = Array.from(loadMoreButtons).find(button => {
+        const text = button.textContent.toLowerCase().trim();
+        return (text.includes('load more') || 
+                text.includes('show more') || 
+                text.includes('see more')) && 
+               button.offsetParent !== null;
+      });
+      
+      if (loadMoreButton) {
+        console.log('🔘 Found load more button, clicking...');
+        loadMoreButton.click();
+        await new Promise(resolve => setTimeout(resolve, 3000));
         
-        // Try scrolling to actual bottom (100%) to trigger more loading
-        if (noNewProductsCount >= 3) {
-          console.log(`Trying to scroll to actual bottom (100%) to trigger more loading...`);
-          window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth'
-          });
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          // Check again after scrolling to actual bottom
-          const productsAtBottom = document.querySelectorAll('section[data-test^="post-item-"]');
-          const productCountAtBottom = productsAtBottom.length;
-          
-          if (productCountAtBottom > productCountAfterScroll) {
-            console.log(`✓ Found ${productCountAtBottom - productCountAfterScroll} more products at actual bottom!`);
-            lastKnownProductCount = productCountAtBottom;
-            noNewProductsCount = 0; // Reset counter
-            currentProductCount = productCountAtBottom;
-          }
+        const productsAfterClick = document.querySelectorAll('section[data-test^="post-item-"]');
+        const productCountAfterClick = productsAfterClick.length;
+        
+        if (productCountAfterClick > currentProductCount) {
+          console.log(`✅ New products loaded after clicking! Total: ${productCountAfterClick}`);
+          currentProductCount = productCountAfterClick;
+          noNewProductsCount = 0;
         }
       }
       
-      // Update page height
-      currentHeight = document.body.scrollHeight;
-      
-      // Check for load more buttons every 10 scroll attempts
-      if (scrollAttempts % 10 === 0) {
-        console.log(`Checking for load more buttons after scroll ${scrollAttempts}...`);
-        
-        const loadMoreButtons = document.querySelectorAll('button');
-        const hasLoadMore = Array.from(loadMoreButtons).some(button => {
-          const text = button.textContent.toLowerCase().trim();
-          return (text.includes('load more') || 
-                  text.includes('show more') || 
-                  text.includes('see more') ||
-                  text.includes('load additional') ||
-                  text.includes('view more')) && 
-                 button.offsetParent !== null;
-        });
-        
-        if (hasLoadMore) {
-          console.log('Found load more button, clicking...');
-          const loadMoreButton = Array.from(loadMoreButtons).find(button => {
-            const text = button.textContent.toLowerCase().trim();
-            return (text.includes('load more') || 
-                    text.includes('show more') || 
-                    text.includes('see more') ||
-                    text.includes('load additional') ||
-                    text.includes('view more')) && 
-                   button.offsetParent !== null;
-          });
-          
-          if (loadMoreButton) {
-            loadMoreButton.click();
-            console.log('Clicked load more button, waiting for products to load...');
-            
-            // Wait for products to load after clicking
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            
-            const productsAfterClick = document.querySelectorAll('section[data-test^="post-item-"]');
-            const productCountAfterClick = productsAfterClick.length;
-            
-            if (productCountAfterClick > lastKnownProductCount) {
-              console.log(`✓ New products loaded after clicking! Products: ${lastKnownProductCount} -> ${productCountAfterClick}`);
-              lastKnownProductCount = productCountAfterClick;
-              noNewProductsCount = 0; // Reset counter
-            }
-            
-            currentHeight = document.body.scrollHeight;
-          }
-        }
-      }
-      
-      // Slow delay between scroll attempts
+      // Short delay between attempts
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    console.log(`\n=== Scroll Cycles Complete ===`);
-    console.log(`Total products found: ${lastProductCount} (started with ${initialProductCount})`);
-    console.log(`Final page height: ${currentHeight}`);
+    console.log(`\n🏁 Scrolling complete! Final products found: ${currentProductCount}`);
     
-    // Final verification - scroll to 95% one more time (5% gap from bottom)
-    console.log('Performing final verification - scrolling to 95% one more time (5% gap from bottom)...');
-    
-    const productsBeforeFinal = document.querySelectorAll('section[data-test^="post-item-"]');
-    const productCountBeforeFinal = productsBeforeFinal.length;
-    
-    console.log(`Products before final verification: ${productCountBeforeFinal}`);
-    
-    // Scroll to 95% of page height (5% gap from bottom) one more time
-    const pageHeight = document.body.scrollHeight;
-    const scrollTo95Percent = Math.floor(pageHeight * 0.95);
-    
-    window.scrollTo({
-      top: scrollTo95Percent,
-      behavior: 'smooth'
-    });
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Check after final scroll to 95%
-    const productsAfterFinal = document.querySelectorAll('section[data-test^="post-item-"]');
-    const productCountAfterFinal = productsAfterFinal.length;
-    
-    if (productCountAfterFinal > productCountBeforeFinal) {
-      console.log(`✓ Found ${productCountAfterFinal - productCountBeforeFinal} new products after final scroll to 95%!`);
-      lastProductCount = productCountAfterFinal;
-    } else {
-      console.log(`⚠ No new products found after final scroll to 95%.`);
-    }
-    
-    const finalProductCount = document.querySelectorAll('section[data-test^="post-item-"]').length;
-    console.log(`Final verification complete. Total products found: ${finalProductCount}, Total height: ${document.body.scrollHeight}`);
-
-    // STEP 1: Collect Product Hunt URLs from the page
-    console.log(`STEP 1: Collecting Product Hunt URLs from current page...`);
+    // Collect products
+    console.log('📋 Collecting product data...');
     const products = scrapeProducts();
-    console.log(`STEP 1 Complete: Collected ${products.length} Product Hunt URLs`);
+    console.log(`✅ Collected ${products.length} products`);
     
     if (products.length > 0) {
-      // Store products globally for potential URL analysis
+      // Store products globally
       collectedProducts = products;
       
-      // Send initial scraping complete message with basic Product Hunt URLs
+      // Send success message
       chrome.runtime.sendMessage({ 
         action: 'urls_collected', 
         count: products.length, 
         data: products,
-        message: `Collected ${products.length} Product Hunt URLs` 
-=======
-    
-    // Keep scrolling until the page height stops increasing
-    while (previousHeight < currentHeight) {
-      previousHeight = currentHeight;
-      window.scrollTo(0, currentHeight);
-      // Wait for a couple of seconds to allow new products to be loaded dynamically
-      await new Promise(resolve => setTimeout(resolve, 2000)); 
-      currentHeight = document.body.scrollHeight;
-    }
-
-    // Once scrolling is complete, call the function to scrape the product data
-    const products = scrapeProducts();
-    
-    // Send the scraped data back to the popup script
-    if (products.length > 0) {
-      chrome.runtime.sendMessage({ 
-        action: 'scraping_complete', 
-        count: products.length, 
-        data: products 
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
+        message: `Fetching product links... Found ${products.length} products so far` 
       });
     } else {
-      // If no products were found, send an error message
+      // Send error message
       chrome.runtime.sendMessage({ 
         action: 'scraping_error', 
-        message: 'No products found after scrolling.' 
+        message: 'No products found after scrolling' 
       });
     }
   } catch (error) {
-    // If any other error occurs, send a generic error message
+    console.error('❌ Scraping error:', error);
     chrome.runtime.sendMessage({ 
       action: 'scraping_error', 
-      message: `An error occurred: ${error.message}` 
+      message: `Scraping failed: ${error.message}` 
     });
   }
 }
 
-<<<<<<< HEAD
 // Analyze Product Hunt URLs to get final destinations and social media data
 async function analyzeProductUrls(products) {
   try {
@@ -451,8 +343,6 @@ async function analyzeProductUrls(products) {
   }
 }
 
-=======
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
 // This function scrapes the product data from the page's HTML.
 function scrapeProducts() {
   const products = [];
@@ -506,19 +396,23 @@ function scrapeProducts() {
   return products;
 }
 
-<<<<<<< HEAD
 
 // Global variables to store collected data
 let collectedProducts = [];
 
 // Listen for messages from popup to determine which phase to run
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'start_url_analysis' && collectedProducts.length > 0) {
+  console.log('Content script received message:', request);
+  
+  if (request.action === 'start_scraping') {
+    console.log('Starting scraping process...');
+    // Start the scraping process when popup requests it
+    scrollToBottomAndScrape();
+  } else if (request.action === 'start_url_analysis' && collectedProducts.length > 0) {
+    console.log('Starting URL analysis...');
     analyzeProductUrls(collectedProducts);
   }
+  
+  // Send response back to popup
+  sendResponse({ received: true });
 });
-
-=======
->>>>>>> f11ebd4ee248393b926cfc8706f9224b7abd2997
-// Start the scraping process as soon as the script is injected
-scrollToBottomAndScrape();
