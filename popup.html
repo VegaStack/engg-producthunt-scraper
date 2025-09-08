@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VegaStack PH</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+  <!-- Main Content Area -->
+  <div class="main-content">
+  <!-- Header Section -->
+  <div class="header">
+    <div class="logo-section">
+      <div class="logo">
+        <div class="logo-icon">
+          <img src="vegastack-logo-180.png" alt="VegaStack" class="vegastack-logo-img">
+        </div>
+        <div class="logo-text">
+          <h1 class="title">ProductHunt Scraper</h1>
+        </div>
+      </div>
+    </div>
+    <p class="subtitle">Extract Product Hunt Product URLs Effortlessly</p>
+  </div>
+
+  <!-- Process Message (Hidden by default) -->
+  <div id="processMessage" class="process-message hidden">
+    <div class="process-text">Fetching website links for the products…</div>
+  </div>
+
+  <!-- Main Status Card (Hidden by default) -->
+  <div id="statusCard" class="status-card hidden">
+    <div id="status" class="status-text">Ready to analyze Product Hunt pages</div>
+    <div id="loader" class="loader-container hidden">
+      <div class="loader"></div>
+    </div>
+    <div id="progressContainer" class="hidden">
+      <div class="progress-indicator">
+        <div id="progressBar" class="progress-bar">
+          <span class="progress-percentage">0%</span>
+        </div>
+      </div>
+      <div class="progress-details">
+        <span class="progress-text"></span>
+      </div>
+    </div>
+    <div id="stats" class="stats-grid hidden"></div>
+  </div>
+
+  <!-- Features Section -->
+  <div class="features-card">
+    <div class="features-header">
+      <h3>Key Features</h3>
+    </div>
+    <div class="features-content">
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 13C10.4295 13.5741 10.9774 14.0491 11.6066 14.3929C12.2357 14.7367 12.9315 14.9411 13.6467 14.9923C14.3618 15.0435 15.0796 14.9403 15.7513 14.6897C16.4231 14.4392 17.0331 14.047 17.54 13.54L20.54 10.54C21.4508 9.59695 21.9548 8.33394 21.9434 7.02296C21.932 5.71198 21.4061 4.45791 20.4791 3.53087C19.5521 2.60383 18.298 2.07799 16.987 2.0666C15.676 2.0552 14.413 2.55918 13.47 3.47L11.75 5.18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 11C13.5705 10.4259 13.0226 9.95085 12.3934 9.60705C11.7643 9.26325 11.0685 9.05886 10.3533 9.00766C9.63816 8.95646 8.92037 9.05972 8.24861 9.31029C7.57686 9.56085 6.96684 9.95303 6.46 10.46L3.46 13.46C2.54918 14.403 2.04519 15.666 2.05659 16.977C2.06799 18.288 2.59383 19.542 3.52087 20.4691C4.44791 21.3961 5.70198 21.922 7.01296 21.9334C8.32394 21.9448 9.58695 21.4408 10.53 20.53L12.24 18.82" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h4>URL Resolution</h4>
+          <p>Redirects to get final destination URLs</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h4>High Performance</h4>
+          <p>Process 100+ URLs in under 1 minutes</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 3V21H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.4 6.4L13 11.8L9 7.8L3 13.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h4>Data Export</h4>
+          <p>Export comprehensive data to CSV format</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Button -->
+  <button id="scrapeButton" class="primary-button">
+    <div class="btn-content">
+      <span class="btn-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="btn-text">Start Extracting Products</span>
+    </div>
+  </button>
+  </div>
+
+  <!-- Footer with VegaStack Branding -->
+  <div class="footer">
+    <div class="powered-by">
+      <span>Developed by</span>
+      <a href="https://vegastack.com/?utm_source=producthunt_scraper_extension_footer" target="_blank" class="vegastack-link">
+        <span class="vegastack-logo">VegaStack</span>
+      </a>
+    </div>
+    <div class="footer-links">
+      <a href="https://vegastack.com/" target="_blank">Report an Issue</a>
+      <span>•</span>
+      <a href="https://vegastack.com/" target="_blank">GitHub</a>
+    </div>
+  </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
