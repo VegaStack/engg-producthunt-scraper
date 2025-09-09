@@ -6,7 +6,6 @@ class UrlAnalyzer {
   // Main method to analyze a URL and get final destination
   async analyzeUrl(url) {
     try {
-      console.log(`Analyzing URL: ${url}`);
       
       // Clean the URL first
       const cleanedUrl = this.cleanUrl(url);
@@ -24,15 +23,12 @@ class UrlAnalyzer {
       
       // If we still got a ProductHunt URL, try background script method
       if (finalUrl.includes('producthunt.com')) {
-        console.log(`Still ProductHunt URL after redirects, trying background script method...`);
         try {
           const backgroundResult = await this.analyzeWithBackgroundScript(cleanedUrl);
           if (backgroundResult && !backgroundResult.includes('producthunt.com')) {
             finalUrl = backgroundResult;
-            console.log(`Background script resolved URL: ${finalUrl}`);
           }
         } catch (error) {
-          console.log(`Background script method failed: ${error.message}`);
         }
       }
       
@@ -78,7 +74,6 @@ class UrlAnalyzer {
   // Follow redirects to get final URL
   async followRedirects(url) {
     try {
-      console.log(`Following redirects for: ${url}`);
       
       // First try with GET method to get the actual redirect
       const response = await fetch(url, {
@@ -92,25 +87,21 @@ class UrlAnalyzer {
       });
       
       const finalUrl = response.url;
-      console.log(`Final URL after redirects: ${finalUrl}`);
       
       // Check if we got a valid external URL
       if (finalUrl && !finalUrl.includes('producthunt.com')) {
         const cleanedUrl = this.cleanUrl(finalUrl);
-        console.log(`Successfully resolved to external URL: ${cleanedUrl}`);
         return cleanedUrl;
       }
       
       // If still a ProductHunt URL, try manual redirect
       if (finalUrl.includes('producthunt.com')) {
-        console.log(`Still ProductHunt URL, trying manual redirect...`);
         return await this.manualRedirectFollow(url);
       }
       
       return finalUrl;
       
     } catch (error) {
-      console.log(`Redirect following failed: ${error.message}`);
       // Try manual redirect as fallback
       return await this.manualRedirectFollow(url);
     }
@@ -119,7 +110,6 @@ class UrlAnalyzer {
   // Extract URL from ProductHunt page content
   async extractUrlFromProductHuntPage(originalUrl, productId) {
     try {
-      console.log(`Extracting URL from ProductHunt page for ID: ${productId}`);
       
       // Try to get the product page
       const productPageUrl = `https://www.producthunt.com/posts/${productId}`;
@@ -134,7 +124,6 @@ class UrlAnalyzer {
       
       if (response.ok) {
         const html = await response.text();
-        console.log(`Page content length: ${html.length}`);
         
         // Multiple patterns to find the website URL
         const patterns = [
@@ -159,12 +148,10 @@ class UrlAnalyzer {
           const match = html.match(pattern);
           if (match) {
             const extractedUrl = match[1];
-            console.log(`Pattern ${i + 1} matched: ${extractedUrl}`);
             
             // Validate that it's not a ProductHunt URL
             if (extractedUrl && !extractedUrl.includes('producthunt.com')) {
               const cleanedUrl = this.cleanUrl(extractedUrl);
-              console.log(`Successfully extracted external URL: ${cleanedUrl}`);
               return cleanedUrl;
             }
           }
@@ -179,7 +166,6 @@ class UrlAnalyzer {
               const url = urlMatch[1];
               if (!url.includes('producthunt.com') && !url.includes('twitter.com') && !url.includes('facebook.com')) {
                 const cleanedUrl = this.cleanUrl(url);
-                console.log(`Found external URL from all links: ${cleanedUrl}`);
                 return cleanedUrl;
               }
             }
@@ -190,7 +176,6 @@ class UrlAnalyzer {
       return originalUrl;
       
     } catch (error) {
-      console.log(`Page extraction failed: ${error.message}`);
       return originalUrl;
     }
   }
@@ -218,13 +203,11 @@ class UrlAnalyzer {
   // Manual redirect following for stubborn ProductHunt URLs
   async manualRedirectFollow(originalUrl) {
     try {
-      console.log(`Manual redirect following for: ${originalUrl}`);
       
       // Extract ProductHunt ID from URL like /r/p/8666828
       const phMatch = originalUrl.match(/\/r\/p\/(\d+)/);
       if (phMatch) {
         const productId = phMatch[1];
-        console.log(`Extracted ProductHunt ID: ${productId}`);
         
         // Try multiple approaches to get the final URL
         const approaches = [
@@ -238,7 +221,6 @@ class UrlAnalyzer {
         
         for (let i = 0; i < approaches.length; i++) {
           const testUrl = approaches[i];
-          console.log(`Trying approach ${i + 1}: ${testUrl}`);
           
           try {
             const response = await fetch(testUrl, {
@@ -253,39 +235,32 @@ class UrlAnalyzer {
             });
             
             const finalUrl = response.url;
-            console.log(`Response URL: ${finalUrl}`);
             
             // Check if we got a valid external URL
             if (finalUrl && !finalUrl.includes('producthunt.com')) {
               const cleanedUrl = this.cleanUrl(finalUrl);
-              console.log(`Successfully resolved to external URL: ${cleanedUrl}`);
               return cleanedUrl;
             }
             
             // If this is the product page, try to extract from content
             if (testUrl.includes(`/posts/${productId}`) && !testUrl.includes('/redirect')) {
-              console.log(`Trying to extract URL from product page content...`);
               const extractedUrl = await this.extractUrlFromProductHuntPage(originalUrl, productId);
               if (extractedUrl && !extractedUrl.includes('producthunt.com')) {
                 const cleanedUrl = this.cleanUrl(extractedUrl);
-                console.log(`Successfully extracted URL from page content: ${cleanedUrl}`);
                 return cleanedUrl;
               }
             }
             
           } catch (error) {
-            console.log(`Approach ${i + 1} failed: ${error.message}`);
             continue;
           }
         }
       }
       
       // If all approaches fail, return original URL
-      console.log(`All manual redirect approaches failed, returning original URL`);
       return originalUrl;
       
     } catch (error) {
-      console.log(`Manual redirect error: ${error.message}`);
       return originalUrl;
     }
   }

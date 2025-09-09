@@ -2,7 +2,6 @@
 // It scrolls to the bottom of the page to load all products and then scrapes the data.
 async function scrollToBottomAndScrape() {
   try {
-    console.log('🚀 Starting ProductHunt scraping process...');
     
     let initialProductCount = document.querySelectorAll('section[data-test^="post-item-"]').length;
     
@@ -17,12 +16,10 @@ async function scrollToBottomAndScrape() {
     let noNewProductsCount = 0;
     const maxNoNewProducts = 3; // Stop after 3 consecutive attempts with no new products
     
-    console.log(`📊 Initial products found: ${initialProductCount}`);
     
     // Simple scrolling strategy
     while (scrollAttempts < maxScrollAttempts && noNewProductsCount < maxNoNewProducts) {
       scrollAttempts++;
-      console.log(`\n🔄 Scroll attempt ${scrollAttempts}/${maxScrollAttempts}`);
       
       // Count products before scroll
       const productsBeforeScroll = document.querySelectorAll('section[data-test^="post-item-"]');
@@ -42,7 +39,6 @@ async function scrollToBottomAndScrape() {
       const productCountAfterScroll = productsAfterScroll.length;
       
       if (productCountAfterScroll > productCountBeforeScroll) {
-        console.log(`✅ Found ${productCountAfterScroll - productCountBeforeScroll} new products! Total: ${productCountAfterScroll}`);
         currentProductCount = productCountAfterScroll;
         noNewProductsCount = 0; // Reset counter
         
@@ -54,7 +50,6 @@ async function scrollToBottomAndScrape() {
         });
       } else {
         noNewProductsCount++;
-        console.log(`⚠️ No new products found. Total: ${productCountAfterScroll} (${noNewProductsCount}/${maxNoNewProducts})`);
       }
       
       // Check for load more buttons
@@ -68,7 +63,6 @@ async function scrollToBottomAndScrape() {
       });
       
       if (loadMoreButton) {
-        console.log('🔘 Found load more button, clicking...');
         loadMoreButton.click();
         await new Promise(resolve => setTimeout(resolve, 3000));
         
@@ -76,7 +70,6 @@ async function scrollToBottomAndScrape() {
         const productCountAfterClick = productsAfterClick.length;
         
         if (productCountAfterClick > currentProductCount) {
-          console.log(`✅ New products loaded after clicking! Total: ${productCountAfterClick}`);
           currentProductCount = productCountAfterClick;
           noNewProductsCount = 0;
         }
@@ -86,12 +79,9 @@ async function scrollToBottomAndScrape() {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    console.log(`\n🏁 Scrolling complete! Final products found: ${currentProductCount}`);
     
     // Collect products
-    console.log('📋 Collecting product data...');
     const products = scrapeProducts();
-    console.log(`✅ Collected ${products.length} products`);
     
     if (products.length > 0) {
       // Store products globally
@@ -144,10 +134,6 @@ async function analyzeProductUrls(products) {
       product['Product Id Url'] && product['Product Id Url'] !== 'N/A'
     );
     
-    console.log(`Starting optimized processing with gradual ramp-up for ${validProducts.length} URLs`);
-    console.log(`Configuration: ${MAX_WORKERS} max workers, ${RAMP_UP_COUNT} ramp-up workers`);
-    console.log(`Ramp-up: First ${RAMP_UP_COUNT} workers with ${INITIAL_DELAY}ms delays`);
-    console.log(`Normal: Remaining workers with ${RAMP_UP_DELAY}ms delays`);
     
     // ThreadPoolExecutor-like concurrent processing with gradual ramp-up
     // Create worker promises (similar to ThreadPoolExecutor.submit())
@@ -157,11 +143,9 @@ async function analyzeProductUrls(products) {
       if (index < RAMP_UP_COUNT) {
         // First 10 workers: 2 seconds each (20 seconds total)
         delay = index * INITIAL_DELAY;
-        console.log(`RAMP-UP Worker ${index + 1}: Starting after ${delay}ms delay`);
       } else {
         // Remaining workers: 500ms each after ramp-up
         delay = (RAMP_UP_COUNT * INITIAL_DELAY) + ((index - RAMP_UP_COUNT) * RAMP_UP_DELAY);
-        console.log(`NORMAL Worker ${index + 1}: Starting after ${delay}ms delay`);
       }
       
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -186,7 +170,6 @@ async function analyzeProductUrls(products) {
           } catch (error) {
             retryCount++;
             if (retryCount <= maxRetries) {
-              console.log(`Worker ${index + 1} retry ${retryCount}/${maxRetries} for ${productIdUrl}: ${error.message}`);
               // Wait before retry (exponential backoff)
               await new Promise(resolve => setTimeout(resolve, retryCount * 2000));
             } else {
@@ -206,10 +189,6 @@ async function analyzeProductUrls(products) {
         }
         
         // Debug logging for this URL
-        console.log(`WORKER ${index + 1} - Analysis result for ${productIdUrl}:`);
-        console.log(`  Final URL: ${analysisResult.finalUrl}`);
-        console.log(`  Final URL type: ${typeof analysisResult.finalUrl}`);
-        console.log(`  Final URL truthy: ${!!analysisResult.finalUrl}`);
         
         // Combine product data with analysis result - simplified
         return {
@@ -257,7 +236,6 @@ async function analyzeProductUrls(products) {
     });
     
     // Wait for all workers to complete (like executor.shutdown(wait=True))
-    console.log(`Waiting for all ${MAX_WORKERS} workers to complete...`);
     const allResults = await Promise.allSettled(workerPromises);
     
     // Collect successful results
@@ -314,13 +292,9 @@ async function analyzeProductUrls(products) {
     });
     
     // STEP 6: Generate CSV file with all collected data
-    console.log(`STEP 6: Preparing CSV file with ${analysisResults.length} analyzed URLs...`);
     
     // Debug log analysis results before sending
-    console.log(`Sending ${analysisResults.length} analysis results to popup`);
     if (analysisResults.length > 0) {
-      console.log(`First result:`, analysisResults[0]);
-      console.log(`First result finalUrl:`, analysisResults[0].finalUrl);
     }
     
     // No validation needed
@@ -333,7 +307,6 @@ async function analyzeProductUrls(products) {
       message: `Analysis complete! Processed ${analysisResults.length} URLs.`
     });
     
-    console.log(`STEP 6 Complete: CSV file ready for download with comprehensive data`);
     
   } catch (error) {
     chrome.runtime.sendMessage({ 
@@ -402,17 +375,12 @@ let collectedProducts = [];
 
 // Listen for messages from popup to determine which phase to run
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Content script received message:', request);
   
   if (request.action === 'start_scraping') {
-    console.log('Starting scraping process...');
     // Start the scraping process when popup requests it
     scrollToBottomAndScrape();
   } else if (request.action === 'start_url_analysis') {
-    console.log('Received start_url_analysis message');
-    console.log('Collected products count:', collectedProducts.length);
     if (collectedProducts.length > 0) {
-      console.log('Starting URL analysis...');
       analyzeProductUrls(collectedProducts);
     } else {
       console.error('No products collected, cannot start URL analysis');

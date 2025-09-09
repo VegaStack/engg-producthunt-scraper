@@ -80,7 +80,6 @@ function cleanUrl(url) {
 // Analyze URL using background script (bypasses CORS)
 async function analyzeUrl(url) {
   try {
-    console.log(`Background script analyzing URL: ${url}`);
     
     // Use fetch with no-cors mode to bypass CORS restrictions
     const response = await fetch(url, {
@@ -102,7 +101,6 @@ async function analyzeUrl(url) {
     
     if (corsResponse && corsResponse.url && !corsResponse.url.includes('producthunt.com')) {
       const cleanedUrl = cleanUrl(corsResponse.url);
-      console.log(`Background script resolved URL: ${cleanedUrl}`);
       return cleanedUrl;
     }
     
@@ -128,12 +126,10 @@ async function analyzeUrl(url) {
           const websiteMatch = html.match(/"website_url":"([^"]+)"/);
           if (websiteMatch) {
             const websiteUrl = cleanUrl(websiteMatch[1]);
-            console.log(`Background script found website URL: ${websiteUrl}`);
             return websiteUrl;
           }
         }
       } catch (error) {
-        console.log(`Background script page extraction failed: ${error.message}`);
       }
     }
     
@@ -172,7 +168,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function fetchContentForUrl(url) {
   try {
-    console.log(`Background script fetching content for: ${url}`);
     
     // Use fetch with proper headers to bypass CORS
     const response = await fetch(url, {
@@ -197,7 +192,6 @@ async function fetchContentForUrl(url) {
     }
     
     const content = await response.text();
-    console.log(`Successfully fetched ${content.length} characters from ${url}`);
     
     return content;
     

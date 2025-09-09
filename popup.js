@@ -149,20 +149,17 @@ scrapeButton.addEventListener('click', () => {
 
   // Find the active tab and inject the content script into it
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    console.log('Injecting scripts into tab:', tabs[0].id);
     
     // First inject the URL analyzer and validator, then the content script
     chrome.scripting.executeScript({
       target: { tabId: tabs[0].id },
       files: ['url-analyzer.js', 'content.js'] // Load analyzer first, then content script
     }, () => {
-      console.log('Scripts injected successfully, sending start_scraping message');
       // Send message to start scraping after scripts are injected
       chrome.tabs.sendMessage(tabs[0].id, { action: 'start_scraping' }, (response) => {
         if (chrome.runtime.lastError) {
           console.error('Error sending message:', chrome.runtime.lastError);
         } else {
-          console.log('Message sent successfully');
         }
       });
     });
@@ -229,7 +226,6 @@ let analysisData = null;
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // Scraping started and progress (both use same UI)
   if (request.action === 'scraping_started' || request.action === 'scraping_progress') {
-    console.log('Scraping message:', request.message);
     statusDiv.innerHTML = `
       <div class="initializing-container">
         <div class="initializing-text">${request.message}</div>
@@ -266,7 +262,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   // Phase 1: URLs collected - automatically start analysis
   else if (request.action === 'urls_collected') {
-    console.log('URLs collected, starting analysis:', request);
     totalProducts = request.count;
     collectedUrls = request.data;
     currentStep = 'analyzing';
@@ -290,14 +285,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     addUrlCollectionWarning();
     
     // Send message to content script to start URL analysis
-    console.log('Sending start_url_analysis message to content script');
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      console.log('Sending message to tab:', tabs[0].id);
       chrome.tabs.sendMessage(tabs[0].id, { action: 'start_url_analysis' }, (response) => {
         if (chrome.runtime.lastError) {
           console.error('Error sending start_url_analysis message:', chrome.runtime.lastError);
         } else {
-          console.log('start_url_analysis message sent successfully:', response);
         }
       });
     });
@@ -323,7 +315,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   // Progress updates during analysis
   else if (request.action === 'analysis_progress') {
-    console.log('Progress update received:', request);
     
     // Keep the process message hidden during progress updates
     processMessage.classList.add('hidden');
@@ -334,7 +325,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Check if we have direct progress percentage
     if (request.progress !== undefined) {
       const percentage = Math.max(1, Math.round(request.progress)); // Ensure minimum 1%
-      console.log(`Updating progress to ${percentage}%`);
       
       // Only update if progress is moving forward
       const currentWidth = parseInt(progressBar.style.width) || 1;
@@ -441,9 +431,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     downloadButton.style.marginTop = '16px';
     
     // Convert the analysis data into CSV format
-    console.log(`Converting ${analysisData.length} results to CSV`);
     if (analysisData.length > 0) {
-      console.log(`First item finalUrl before CSV conversion:`, analysisData[0].finalUrl);
     }
     const csvData = convertAnalysisToCSV(analysisData);
 
@@ -491,8 +479,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         
         // Debug: Log that download button was created
-        console.log('Download button created and inserted:', downloadButton.textContent);
-        console.log('Download button parent:', downloadButton.parentNode);
       } else {
         console.error('Status card not found for download button insertion');
       }
@@ -528,12 +514,9 @@ function triggerDownload(csvContent, filename = 'producthunt_scraper_list.csv') 
 // This function converts analysis data to CSV format matching the Python script output
 function convertAnalysisToCSV(data) {
   if (!data || data.length === 0) {
-    console.log("No data to convert to CSV");
     return "";
   }
   
-  console.log("First row in CSV conversion:", data[0]);
-  console.log("Final URL in first row:", data[0].finalUrl);
   
   // Define headers including ProductHunt data, analysis results, and validation data
   const headers = [
@@ -543,7 +526,7 @@ function convertAnalysisToCSV(data) {
     'ProductHunt URL',
     'Comments',
     'Upvotes',
-    'ProductHunt URLS',
+    'ProductHunt Redirect URL',
     'Website URL'
   ];
   
@@ -551,7 +534,6 @@ function convertAnalysisToCSV(data) {
 
   // Iterate over each analysis result to create a CSV row
   for (const row of data) {
-    console.log(`Processing row with finalUrl: ${row.finalUrl}`);
     
     const values = headers.map(header => {
       let value = '';
@@ -576,12 +558,11 @@ function convertAnalysisToCSV(data) {
         case 'Upvotes':
           value = row.pods || 'N/A';
           break;
-        case 'ProductHunt URLS':
+        case 'ProductHunt Redirect URL':
           value = row.originalUrl || 'N/A';
           break;
         case 'Website URL':
           value = row.finalUrl || '';
-          console.log(`Setting Website URL to: ${value}`);
           break;
         // No data extraction columns needed
         default:
@@ -598,8 +579,6 @@ function convertAnalysisToCSV(data) {
   const finalCsv = csvRows.join('\n');
   
   // Debug log to check CSV output
-  console.log(`CSV generation complete. First 200 chars: ${finalCsv.substring(0, 200)}...`);
-  console.log(`CSV contains Final URL column: ${finalCsv.includes('Final URL')}`);
   
   return finalCsv; // Join all rows with a newline character
 }
