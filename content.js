@@ -135,7 +135,7 @@ async function analyzeProductUrls(products) {
     // Configuration for optimized concurrent processing with gradual ramp-up
     const MAX_WORKERS = 50; // Reduced to prevent server overload
     const MAX_TIMEOUT = 15000; // 15 seconds timeout per URL for better success rate
-    const INITIAL_DELAY = 2000; // 2 seconds delay for first few workers
+    const INITIAL_DELAY = 2000; // 2 seconds delay for first few workers 
     const RAMP_UP_DELAY = 500; // 500ms delay between workers after ramp-up
     const RAMP_UP_COUNT = 10; // First 10 workers get longer delays
     

@@ -11,6 +11,7 @@ const progressText = document.querySelector('.progress-text');
 const statsContainer = document.getElementById('stats');
 const featuresCard = document.querySelector('.features-card');
 
+
 // Check if current page is a ProductHunt leaderboard
 async function isProductHuntLeaderboard() {
   try {
@@ -57,33 +58,6 @@ function addUrlCollectionWarning() {
   statusCard.appendChild(warningDiv);
 }
 
-// Show error state for non-leaderboard pages
-function showErrorState() {
-  statusDiv.innerHTML = `
-    <div class="error-indicator">
-      <div class="error-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="error-text">Click below button to view leaderboard</div>
-    </div>
-  `;
-  
-  // Update button
-  scrapeButton.disabled = false;
-  scrapeButton.className = 'primary-button'; // Apply standard primary button style
-  const btnText = scrapeButton.querySelector('.btn-text');
-  const btnIcon = scrapeButton.querySelector('.btn-icon');
-  
-  btnText.textContent = 'Open ProductHunt Leaderboard Page';
-  btnIcon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  
-  // Add click handler for opening leaderboard
-  scrapeButton.onclick = () => {
-    window.open(getCurrentLeaderboardUrl(), '_blank');
-  };
-}
 
 // Show state for main leaderboard page (needs to navigate to specific leaderboard)
 function showMainLeaderboardState() {
@@ -132,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const isMainLeaderboard = await isMainLeaderboardPage();
   
   if (!isOnLeaderboard) {
-    showErrorState();
+    showMainLeaderboardState();
   } else if (isMainLeaderboard) {
     showMainLeaderboardState();
   }
@@ -226,7 +200,7 @@ function updateProgress(current, total, message) {
 function resetUI() {
   scrapeButton.classList.remove('secondary-button');
   scrapeButton.classList.add('primary-button');
-  scrapeButton.textContent = 'Start Analysis';
+  scrapeButton.textContent = 'Start Extracting Products';
   scrapeButton.disabled = false;
   
   loader.classList.add('hidden');
@@ -253,9 +227,9 @@ let analysisData = null;
 
 // Listen for messages from the content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  // Scraping started
-  if (request.action === 'scraping_started') {
-    console.log('Scraping started:', request.message);
+  // Scraping started and progress (both use same UI)
+  if (request.action === 'scraping_started' || request.action === 'scraping_progress') {
+    console.log('Scraping message:', request.message);
     statusDiv.innerHTML = `
       <div class="initializing-container">
         <div class="initializing-text">${request.message}</div>
@@ -272,24 +246,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     `;
   }
   
-  // Scraping progress
-  else if (request.action === 'scraping_progress') {
-    console.log('Scraping progress:', request.message);
-    statusDiv.innerHTML = `
-      <div class="initializing-container">
-        <div class="initializing-text">${request.message}</div>
-        <div class="initializing-spinner"></div>
-      </div>
-      <div class="process-warning">
-        <div class="warning-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="warning-text">Do not close this page or extension. This can take up to a few minutes.</div>
-      </div>
-    `;
-  }
   
   // Scraping error
   else if (request.action === 'scraping_error') {
@@ -472,7 +428,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     scrapeButton.disabled = false;
     const btnText = scrapeButton.querySelector('.btn-text');
     const btnIcon = scrapeButton.querySelector('.btn-icon');
-    btnText.textContent = 'Start Analysis';
+    btnText.textContent = 'Start Extracting Products';
     btnIcon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="currentColor"/></svg>';
     
     // Hide the main button

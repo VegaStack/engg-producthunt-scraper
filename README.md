@@ -36,6 +36,7 @@ The extension extracts the following information for each product:
 | **ProductHunt URL** | Direct link to the product on ProductHunt |
 | **Comments** | Number of comments |
 | **Upvotes** | Number of upvotes (pods) |
+| **ProductHunt URL.** | Direct link to the website |
 | **Website URL** | Final resolved website URL |
 
 ## 🚀 Installation
