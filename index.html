@@ -85,7 +85,7 @@
     }
     
     .main-content {
-      min-height: calc(100vh - 100px);
+      min-height: 100vh;
     }
     
     .last-updated {
@@ -93,12 +93,6 @@
       color: #6b7280;
       font-style: italic;
       margin-bottom: 24px;
-    }
-    
-    .footer {
-      position: relative;
-      bottom: 0;
-      width: 100%;
     }
     
     /* Reduced logo size for privacy policy page */
@@ -111,9 +105,63 @@
       font-size: 18px;
     }
     
-    @media (max-width: 640px) {
+    /* Responsive design improvements */
+    @media (max-width: 768px) {
+      body {
+        padding: 0 16px;
+      }
+      
       .privacy-content {
         padding: 16px;
+      }
+      
+      .privacy-content h1 {
+        font-size: 20px;
+      }
+      
+      .privacy-content h2 {
+        font-size: 16px;
+      }
+      
+      .privacy-content table {
+        font-size: 12px;
+      }
+      
+      .privacy-content th, 
+      .privacy-content td {
+        padding: 6px 8px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 0 12px;
+      }
+      
+      .privacy-content {
+        padding: 12px;
+      }
+      
+      .privacy-content h1 {
+        font-size: 18px;
+      }
+      
+      .privacy-content h2 {
+        font-size: 15px;
+      }
+      
+      .privacy-content p,
+      .privacy-content li {
+        font-size: 13px;
+      }
+      
+      .privacy-content table {
+        font-size: 11px;
+      }
+      
+      .privacy-content th, 
+      .privacy-content td {
+        padding: 4px 6px;
       }
     }
   </style>
@@ -222,21 +270,6 @@
         <hr>
         
         <p><em>This privacy policy is designed to be transparent about our data practices and ensure user privacy protection.</em></p>
-      </div>
-    </div>
-
-    <!-- Footer with VegaStack Branding -->
-    <div class="footer">
-      <div class="powered-by">
-        <span>Developed by</span>
-        <a href="https://vegastack.com/?utm_source=producthunt_scraper_extension_footer" target="_blank" class="vegastack-link">
-          <span class="vegastack-logo">VegaStack</span>
-        </a>
-      </div>
-      <div class="footer-links">
-        <a href="https://github.com/VegaStack/engg-producthunt-scraper/issues/" target="_blank">Report an Issue</a>
-        <span>•</span>
-        <a href="https://github.com/VegaStack/engg-producthunt-scraper/" target="_blank">GitHub</a>
       </div>
     </div>
   </div>
