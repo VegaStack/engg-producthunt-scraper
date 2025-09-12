@@ -224,16 +224,16 @@ class UrlAnalyzer {
           
           try {
             const response = await fetch(testUrl, {
-              method: 'GET',
-              redirect: 'follow',
-              mode: 'cors',
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Referer': 'https://www.producthunt.com/',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-              }
-            });
-            
+          method: 'GET',
+          redirect: 'follow',
+          mode: 'cors',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://www.producthunt.com/',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          }
+        });
+        
             const finalUrl = response.url;
             
             // Check if we got a valid external URL
@@ -244,7 +244,7 @@ class UrlAnalyzer {
             
             // If this is the product page, try to extract from content
             if (testUrl.includes(`/posts/${productId}`) && !testUrl.includes('/redirect')) {
-              const extractedUrl = await this.extractUrlFromProductHuntPage(originalUrl, productId);
+        const extractedUrl = await this.extractUrlFromProductHuntPage(originalUrl, productId);
               if (extractedUrl && !extractedUrl.includes('producthunt.com')) {
                 const cleanedUrl = this.cleanUrl(extractedUrl);
                 return cleanedUrl;
