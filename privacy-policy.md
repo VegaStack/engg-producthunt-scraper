@@ -33,7 +33,7 @@ The extension temporarily stores extracted data in your browser's local storage 
 | **Active Tab** | Used only to detect Product Hunt leaderboard pages |
 | **Scripting** | Used only to extract publicly visible product data from Product Hunt pages |
 | **Host Access** | Limited to producthunt.com domain for functionality |
-| **Storage** | Used only for temporary data processing during extraction |
+
 
 ## 5. Third-Party Services
 

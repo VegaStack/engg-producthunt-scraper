@@ -114,9 +114,10 @@ Go to any ProductHunt leaderboard page:
 
 ### Permissions
 
-- `tabs`: Access to ProductHunt tabs for scraping and querying
-- `scripting`: Inject content scripts for data extraction
-- `host_permissions`: Limited to ProductHunt domains only
+- `activeTab`: Access to the current ProductHunt tab
+- `scripting`: Inject content scripts
+- `tabs`: Query tab information
+- `*://*/*`: Host permissions for URL resolution
 
 ## 🔧 Development
 

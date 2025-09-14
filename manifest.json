@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ProductHunt Scraper - Free, No API key required",
-  "version": "1.0.1",
+  "version": "1.0",
   "description": "Extract ProductHunt leaderboards to CSV instantly - no API required, completely free",
   "permissions": [
     "activeTab",
