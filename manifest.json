@@ -4,10 +4,8 @@
   "version": "1.0",
   "description": "Extract ProductHunt leaderboards to CSV instantly - no API required, completely free",
   "permissions": [
-    "activeTab",
     "scripting",
-    "tabs",
-    "storage"
+    "tabs"
   ],
   "host_permissions": [
     "https://www.producthunt.com/*",
